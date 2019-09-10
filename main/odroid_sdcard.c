@@ -72,9 +72,6 @@ static void quick_sort(char* arr[], int low, int high)
 
 static void sort_files(char** files, int count)
 {
-    int n = count;
-    bool swapped = true;
-
     if (count > 1)
     {
         quick_sort(files, 0, count - 1);
@@ -86,8 +83,6 @@ static void sort_files(char** files, int count)
 int odroid_sdcard_files_get(const char* path, const char* extension, char*** filesOut)
 {
     const int MAX_FILES = 1024;
-    const uint32_t MALLOC_CAPS = MALLOC_CAP_DEFAULT; //MALLOC_CAP_SPIRAM
-
 
     int count = 0;
     char** result = (char**)malloc(MAX_FILES * sizeof(void*));

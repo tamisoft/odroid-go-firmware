@@ -2,14 +2,13 @@
 #include "esp_wifi.h"
 #include "esp_system.h"
 #include "esp_event.h"
-#include "esp_event_loop.h"
 #include "nvs_flash.h"
 #include "driver/gpio.h"
 #include "esp_partition.h"
 #include "esp_ota_ops.h"
 #include "esp_heap_caps.h"
-#include "esp_flash_data_types.h"
-#include "rom/crc.h"
+#include "esp_flash_partitions.h"
+#include "esp32/rom/crc.h"
 
 #include <string.h>
 
@@ -156,7 +155,7 @@ ui_firmware_image_get_exit:
     fclose(file);
 }
 
-static void ClearScreen()
+static void __attribute__((unused)) ClearScreen()
 {
 }
 
@@ -173,7 +172,7 @@ static void DisplayError(const char* message)
     UG_SetForecolor(C_RED);
     UG_SetBackcolor(C_WHITE);
     UG_FillFrame(0, top, 319, top + 12, C_WHITE);
-    UG_PutString(left, top, message);
+    UG_PutString(left, top, (char *)message);
 
     UpdateDisplay();
 }
@@ -186,7 +185,7 @@ static void DisplayMessage(const char* message)
     UG_SetForecolor(C_BLACK);
     UG_SetBackcolor(C_WHITE);
     UG_FillFrame(0, top, 319, top + 12, C_WHITE);
-    UG_PutString(left, top, message);
+    UG_PutString(left, top, (char *)message);
 
     UpdateDisplay();
 }
@@ -220,7 +219,7 @@ static void DisplayFooter(const char* message)
     UG_SetForecolor(C_BLACK);
     UG_SetBackcolor(C_WHITE);
     UG_FillFrame(0, top, 319, top + 12, C_WHITE);
-    UG_PutString(left, top, message);
+    UG_PutString(left, top, (char *)message);
 
     UpdateDisplay();
 }
@@ -233,7 +232,7 @@ static void DisplayHeader(const char* message)
     UG_SetForecolor(C_BLACK);
     UG_SetBackcolor(C_WHITE);
     UG_FillFrame(0, top, 319, top + 12, C_WHITE);
-    UG_PutString(left, top, message);
+    UG_PutString(left, top, (char *)message);
 
     UpdateDisplay();
 }
@@ -261,7 +260,7 @@ void boot_application()
     }
 
     backlight_deinit();
-    
+
     // reboot
     esp_restart();
 }
@@ -274,7 +273,7 @@ void boot_application()
 #define PART_TYPE_APP 0x00
 #define PART_SUBTYPE_FACTORY 0x00
 
-static void print_partitions()
+static void __attribute__((unused)) print_partitions()
 {
     const esp_partition_info_t* partition_data = (const esp_partition_info_t*)malloc(ESP_PARTITION_TABLE_MAX_LEN);
     if (!partition_data) abort();
@@ -356,14 +355,14 @@ static void write_partition_table(odroid_partition_t* parts, size_t parts_count)
     // blank partition table entries
     for (int i = startTableEntry; i < ESP_PARTITION_TABLE_MAX_ENTRIES; ++i)
     {
-        memset(&partition_data[i], 0xff, sizeof(esp_partition_info_t));
+        memset((void *)&partition_data[i], 0xff, sizeof(esp_partition_info_t));
     }
 
     // Add partitions
     size_t offset = 0;
     for (int i = 0; i < parts_count; ++i)
     {
-        esp_partition_info_t* part = &partition_data[startTableEntry + i];
+        esp_partition_info_t* part = (esp_partition_info_t *)&partition_data[startTableEntry + i];
         part->magic = ESP_PARTITION_MAGIC;
         part->type = parts[i].type;
         part->subtype = parts[i].subtype;
@@ -782,7 +781,7 @@ void flash_firmware(const char* fullPath)
 
     }
 
-    close(file);
+    fclose(file);
 
 
     // Utility
@@ -933,7 +932,7 @@ static void ui_draw_title()
     const short titleLeft = (320 / 2) - (strlen(TITLE) * 9 / 2);
     UG_SetForecolor(C_WHITE);
     UG_SetBackcolor(C_MIDNIGHT_BLUE);
-    UG_PutString(titleLeft, 4, TITLE);
+    UG_PutString(titleLeft, 4, (char *)TITLE);
 
     // Footer
     UG_FillFrame(0, 239 - 16, 319, 239, C_MIDNIGHT_BLUE);
@@ -1206,8 +1205,6 @@ static void menu_main()
         printf("%s: fileName='%s'\n", __func__, fileName);
 
         flash_firmware(fileName);
-
-        free(fileName);
     }
 
     indicate_error();
