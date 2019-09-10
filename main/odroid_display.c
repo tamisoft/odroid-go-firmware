@@ -247,20 +247,19 @@ static void send_continue_line(uint16_t *line, int width, int lineCount)
 
 static void backlight_init()
 {
-  // (duty range is 0 ~ ((2**bit_num)-1)
+    // (duty range is 0 ~ ((2**bit_num)-1)
 
 
-  //configure timer0
-  ledc_timer_config_t ledc_timer;
-	memset(&ledc_timer, 0, sizeof(ledc_timer));
+    //configure timer0
+    ledc_timer_config_t ledc_timer;
+    memset(&ledc_timer, 0, sizeof(ledc_timer));
 
-  ledc_timer.duty_resolution = LEDC_TIMER_13_BIT; //set timer counter bit number
-  ledc_timer.freq_hz = 5000;              //set frequency of pwm
-  ledc_timer.speed_mode = LEDC_LOW_SPEED_MODE;   //timer mode,
-  ledc_timer.timer_num = LEDC_TIMER_0;    //timer index
+    ledc_timer.duty_resolution = LEDC_TIMER_13_BIT; //set timer counter bit number
+    ledc_timer.freq_hz = 5000;              //set frequency of pwm
+    ledc_timer.speed_mode = LEDC_LOW_SPEED_MODE;   //timer mode,
+    ledc_timer.timer_num = LEDC_TIMER_0;    //timer index
 
-
-  ledc_timer_config(&ledc_timer);
+    ledc_timer_config(&ledc_timer);
 
 
     //set the configuration
@@ -428,7 +427,7 @@ void ili9341_write_frame_rectangleLE(short left, short top, short width, short h
 
 void ili9341_init()
 {
-	// Initialize transactions
+    // Initialize transactions
     for (int x=0; x<8; x++) {
         memset(&trans[x], 0, sizeof(spi_transaction_t));
         if ((x&1)==0) {
@@ -447,7 +446,7 @@ void ili9341_init()
     esp_err_t ret;
     //spi_device_handle_t spi;
     spi_bus_config_t buscfg;
-	memset(&buscfg, 0, sizeof(buscfg));
+    memset(&buscfg, 0, sizeof(buscfg));
 
     buscfg.miso_io_num = SPI_PIN_NUM_MISO;
     buscfg.mosi_io_num = SPI_PIN_NUM_MOSI;
@@ -456,11 +455,11 @@ void ili9341_init()
     buscfg.quadhd_io_num=-1;
 
     spi_device_interface_config_t devcfg;
-	memset(&devcfg, 0, sizeof(devcfg));
+    memset(&devcfg, 0, sizeof(devcfg));
 
     devcfg.clock_speed_hz = LCD_SPI_CLOCK_RATE;
     devcfg.mode = 0;                                //SPI mode 0
-    devcfg.spics_io_num = LCD_PIN_NUM_CS;               //CS pin
+    devcfg.spics_io_num = LCD_PIN_NUM_CS;           //CS pin
     devcfg.queue_size = 7;                          //We want to be able to queue 7 transactions at a time
     devcfg.pre_cb = ili_spi_pre_transfer_callback;  //Specify pre-transfer callback to handle D/C line
     devcfg.post_cb = ili_spi_post_transfer_callback;
@@ -476,10 +475,10 @@ void ili9341_init()
 
 
     //Initialize the LCD
-	printf("LCD: calling ili_init.\n");
+    printf("LCD: calling ili_init.\n");
     ili_init();
 
-	printf("LCD: calling backlight_init.\n");
+    printf("LCD: calling backlight_init.\n");
     backlight_init();
 
     printf("LCD Initialized (%d Hz).\n", LCD_SPI_CLOCK_RATE);
