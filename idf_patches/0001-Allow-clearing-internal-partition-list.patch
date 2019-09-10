@@ -1,0 +1,58 @@
+From d6122f1251b02b6d1429dbed57f3017289994af8 Mon Sep 17 00:00:00 2001
+From: OtherCrashOverride <OtherCrashOverride@users.noreply.github.com>
+Date: Thu, 26 Jul 2018 22:43:20 -0500
+Subject: [PATCH 1/2] Allow clearing internal partition list.
+
+When a new partition table is dynamically written, the changes
+do not appear unless the internal partition list is cleared.
+---
+ components/spi_flash/include/esp_partition.h |  2 ++
+ components/spi_flash/partition.c             | 19 +++++++++++++++++++
+ 2 files changed, 21 insertions(+)
+
+diff --git a/components/spi_flash/include/esp_partition.h b/components/spi_flash/include/esp_partition.h
+index 42ac6777c..99b9d5f28 100644
+--- a/components/spi_flash/include/esp_partition.h
++++ b/components/spi_flash/include/esp_partition.h
+@@ -109,6 +109,8 @@ typedef struct {
+     bool encrypted;                     /*!< flag is set to true if partition is encrypted */
+ } esp_partition_t;
+ 
++void esp_partition_reload_table();
++
+ /**
+  * @brief Find partition based on one or more parameters
+  *
+diff --git a/components/spi_flash/partition.c b/components/spi_flash/partition.c
+index 14de32c9f..46bfe7aeb 100644
+--- a/components/spi_flash/partition.c
++++ b/components/spi_flash/partition.c
+@@ -62,6 +62,25 @@ static SLIST_HEAD(partition_list_head_, partition_list_item_) s_partition_list =
+ static _lock_t s_partition_list_lock;
+ 
+ 
++void esp_partition_reload_table()
++{
++    if (!SLIST_EMPTY(&s_partition_list))
++    {
++        _lock_acquire(&s_partition_list_lock);
++
++        // Remove all entries
++        while(!SLIST_EMPTY(&s_partition_list))
++        {
++            partition_list_item_t* item = SLIST_FIRST(&s_partition_list);
++            SLIST_REMOVE_HEAD(&s_partition_list, next);
++
++            free(item);
++        }
++
++        _lock_release(&s_partition_list_lock);
++    }
++}
++
+ esp_partition_iterator_t esp_partition_find(esp_partition_type_t type,
+         esp_partition_subtype_t subtype, const char* label)
+ {
+-- 
+2.17.1
+
